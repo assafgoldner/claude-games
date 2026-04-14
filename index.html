@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>היכן זה? — רמי וימר אדריכלים</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #0f172a; color: #f1f5f9; direction: rtl; overflow: hidden; height: 100vh; }
+#splash { position:fixed; inset:0; background:linear-gradient(135deg,#0f172a,#1e3a5f); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:999; gap:16px; }
+#splash h1 { font-size:2.8rem; font-weight:900; color:#38bdf8; }
+#splash .sub { color:#94a3b8; font-size:1rem; }
+#splash .firm { color:#64748b; font-size:0.9rem; font-weight:700; }
+.setup-box { background:#1e293b; border-radius:16px; padding:24px 32px; width:400px; }
+.setup-box h2 { color:#38bdf8; margin-bottom:14px; font-size:1rem; }
+.prow { display:flex; gap:8px; margin-bottom:8px; align-items:center; }
+.prow input { flex:1; background:#0f172a; border:1px solid #334155; border-radius:8px; padding:9px 12px; color:#f1f5f9; font-size:0.95rem; }
+.cdot { width:18px; height:18px; border-radius:50%; flex-shrink:0; }
+.btn-add { background:none; border:1px dashed #475569; color:#94a3b8; border-radius:8px; padding:9px; cursor:pointer; width:100%; font-size:0.85rem; margin-top:4px; }
+.btn-add:hover { border-color:#38bdf8; color:#38bdf8; }
+.btn-start { background:linear-gradient(135deg,#0ea5e9,#6366f1); color:#fff; border:none; border-radius:12px; padding:13px; font-size:1rem; font-weight:700; cursor:pointer; width:100%; margin-top:12px; }
+#game { display:none; flex-direction:column; height:100vh; }
+#topbar { background:#1e293b; padding:8px 14px; display:flex; align-items:center; gap:12px; border-bottom:1px solid #334155; flex-shrink:0; }
+.ttitle { font-size:0.9rem; font-weight:700; color:#38bdf8; white-space:nowrap; }
+#round-info { font-size:0.8rem; color:#94a3b8; white-space:nowrap; }
+#timer { font-size:1.1rem; font-weight:700; color:#f59e0b; white-space:nowrap; margin-right:auto; }
+#scoreboard { display:flex; gap:6px; flex-wrap:wrap; }
+.schip { display:flex; align-items:center; gap:4px; background:#0f172a; border-radius:20px; padding:3px 9px; font-size:0.75rem; white-space:nowrap; }
+.sdot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+#main { display:flex; flex:1; overflow:hidden; }
+#panel { width:340px; flex-shrink:0; background:#1e293b; display:flex; flex-direction:column; border-left:1px solid #334155; }
+#imgbox { position:relative; width:100%; height:220px; background:#0f172a; flex-shrink:0; overflow:hidden; }
+#bimg { width:100%; height:100%; object-fit:cover; display:block; }
+#imgfb { display:none; position:absolute; inset:0; background:linear-gradient(135deg,#0f172a,#1e3a5f); flex-direction:column; align-items:center; justify-content:center; padding:16px; text-align:center; }
+#turnbox { padding:11px 14px; border-bottom:1px solid #334155; flex-shrink:0; }
+#pname { font-size:0.95rem; font-weight:700; }
+#pinstr { font-size:0.75rem; color:#94a3b8; margin-top:3px; }
+#hintbox { padding:10px 14px; border-bottom:1px solid #334155; flex-shrink:0; }
+#htext { font-size:0.78rem; color:#fbbf24; min-height:30px; line-height:1.5; }
+#hbtn { background:#78350f; border:none; color:#fbbf24; border-radius:8px; padding:7px 12px; cursor:pointer; font-size:0.78rem; margin-top:6px; width:100%; }
+#hbtn:disabled { opacity:0.4; cursor:not-allowed; }
+#actbox { padding:12px 14px; margin-top:auto; }
+#gbtn { background:linear-gradient(135deg,#16a34a,#15803d); color:#fff; border:none; border-radius:10px; padding:11px; font-size:0.95rem; font-weight:700; cursor:pointer; width:100%; }
+#gbtn:disabled { background:#1e3a2e; color:#4b5563; cursor:not-allowed; }
+#mapbox { flex:1; position:relative; }
+#map { width:100%; height:100%; }
+#maphint { position:absolute; top:10px; left:50%; transform:translateX(-50%); background:rgba(15,23,42,0.85); color:#94a3b8; padding:5px 14px; border-radius:20px; font-size:0.75rem; z-index:500; pointer-events:none; white-space:nowrap; }
+#resover { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:900; overflow-y:auto; padding:16px; }
+#resbox { background:#1e293b; border-radius:18px; max-width:640px; margin:20px auto; padding:28px; }
+#resbox h2 { color:#38bdf8; font-size:1.3rem; margin-bottom:14px; }
+.rcard { background:#0f172a; border-radius:10px; padding:12px 16px; margin:8px 0; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.rplayer { display:flex; align-items:center; gap:8px; }
+.rdot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+.rpts { font-size:1.1rem; font-weight:900; color:#38bdf8; }
+.rdist { font-size:0.75rem; color:#94a3b8; }
+.btn-next { background:linear-gradient(135deg,#0ea5e9,#6366f1); color:#fff; border:none; border-radius:10px; padding:12px; font-size:0.95rem; font-weight:700; cursor:pointer; width:100%; margin-top:16px; }
+#finover { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:950; overflow-y:auto; padding:16px; }
+#finbox { background:linear-gradient(135deg,#0f172a,#1e3a5f); border:1px solid #334155; border-radius:22px; max-width:520px; margin:40px auto; padding:40px; text-align:center; }
+#finbox h1 { font-size:2rem; color:#fbbf24; margin-bottom:20px; }
+.frank { padding:12px 20px; border-radius:10px; margin:7px 0; display:flex; align-items:center; justify-content:space-between; font-size:0.95rem; }
+.frank.f1 { background:#78350f; color:#fbbf24; font-weight:900; font-size:1.1rem; }
+.frank.fx { background:#1e293b; color:#f1f5f9; }
+.btn-restart { background:#475569; color:#fff; border:none; border-radius:10px; padding:12px 24px; font-size:0.95rem; cursor:pointer; margin-top:20px; }
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <h1>🏛️ היכן זה?</h1>
+  <div class="sub">משחק ניחוש מיקום בניינים</div>
+  <div class="firm">רמי וימר אדריכלים בע״מ</div>
+  <div class="setup-box">
+    <h2>שחקנים</h2>
+    <div id="plist"></div>
+    <button class="btn-add" onclick="addPlayer()">+ הוסף שחקן</button>
+    <button class="btn-start" onclick="startGame()">▶ התחל!</button>
+  </div>
+</div>
+
+<div id="game">
+  <div id="topbar">
+    <div class="ttitle">🏛️ היכן זה?</div>
+    <div id="round-info">סיבוב 1</div>
+    <div id="timer">⏱ 60</div>
+    <div id="scoreboard"></div>
+  </div>
+  <div id="main">
+    <div id="panel">
+      <div id="imgbox">
+        <img id="bimg" src="" alt="בניין"/>
+        <div id="imgfb">
+          <div style="font-size:2.5rem;margin-bottom:8px">🏛️</div>
+          <div id="fbname" style="font-size:0.95rem;font-weight:700;color:#38bdf8;margin-bottom:6px"></div>
+          <div id="fbdesc" style="font-size:0.78rem;color:#94a3b8;line-height:1.5"></div>
+        </div>
+      </div>
+      <div id="turnbox">
+        <div id="pname">שחקן</div>
+        <div id="pinstr">לחץ על המפה לסמן את מיקום הבניין</div>
+      </div>
+      <div id="hintbox">
+        <div id="htext">💡 לחץ לקבלת רמז (−30% ניקוד)</div>
+        <button id="hbtn" onclick="showHint()">קבל רמז</button>
+      </div>
+      <div id="actbox">
+        <button id="gbtn" onclick="submitGuess()" disabled>📍 אישור ניחוש</button>
+      </div>
+    </div>
+    <div id="mapbox">
+      <div id="maphint">לחץ על המפה לסימון מיקום הבניין</div>
+      <div id="map"></div>
+    </div>
+  </div>
+</div>
+
+<div id="resover">
+  <div id="resbox">
+    <h2 id="restitle">תוצאות</h2>
+    <div id="rescards"></div>
+    <button class="btn-next" onclick="nextRound()">הסיבוב הבא ←</button>
+  </div>
+</div>
+
+<div id="finover">
+  <div id="finbox">
+    <h1>🏆 סוף המשחק!</h1>
+    <div id="franks"></div>
+    <button class="btn-restart" onclick="location.reload()">🔄 משחק חדש</button>
+  </div>
+</div>
+
+<script>
+const R = 'https://assafgoldner.github.io/claude-games/';
+const u = n => R + n;
+
+const BUILDINGS = [
+  { name:'דרך הים, גני תקווה',        hint:'פרויקט מגורים גבוה לאורך הכביש הראשי בגני תקווה',            lat:32.0612, lng:34.8718, url:u('03_דרך_הים_גני_תקווה.jpg') },
+  { name:'אבא קובנר 1-3, ת"א',        hint:'בניין מגורים בסגנון קלאסי עם אבן בהירה בתל אביב',            lat:32.0620, lng:34.7721, url:u('04_אבא_קובנר_1-3_תל_אביב.jpg') },
+  { name:'יהודה מרגוזה 27, יפו',      hint:'בניין מגורים צהוב-שמנת עם בלקונות עגולות ביפו',              lat:32.0494, lng:34.7530, url:u('05_יהודה_מרגוזה_27_יפו.jpg') },
+  { name:'מודיעין 14-16, קריית אונו',  hint:'בניין מגורים נמוך עם אבן לבנה בקריית אונו',                  lat:32.0553, lng:34.8606, url:u('06_מודיעין_14-16_קריית_אונו.jpg') },
+  { name:'רמת השרון',                  hint:'שני מגדלי מגורים לבנים גבוהים ברמת השרון',                   lat:32.1468, lng:34.8380, url:u('07_רמת_השרון.jpg') },
+  { name:'אלתרמן 2-4, ת"א',           hint:'בניין מגורים לבן-אפור עם גינה בצמוד לו בתל אביב',            lat:32.0870, lng:34.7812, url:u('08_אלתרמן_2-4_תל_אביב.jpg') },
+  { name:'סביוני המשתלה, ת"א',        hint:'פרויקט מגורים יוקרתי עם וילות ומגדלים, קרוב לשדה דב',        lat:32.1009, lng:34.7897, url:u('09_סביוני_המשתלה_תל_אביב.jpg') },
+  { name:'אבא קובנר 5, ת"א',          hint:'מגדל מגורים גבוה עם חיפוי אבן ועמוד זכוכית מרכזי',           lat:32.0625, lng:34.7718, url:u('10_אבא_קובנר_5_תל_אביב.jpg') },
+  { name:'בן יהודה 209, ת"א',         hint:'בניין משרדים עם חיפוי לבן וירוק ברחוב בן יהודה',              lat:32.0971, lng:34.7742, url:u('11_בן_יהודה_209_תל_אביב.jpg') },
+  { name:'מנורה 4, ת"א',              hint:'בניין מגורים עגול ולבן — אחד המבנים המיוחדים בתל אביב',       lat:32.0592, lng:34.7594, url:u('12_מנורה_4_תל_אביב.jpg') },
+  { name:'זלטופולסקי 21, ת"א',        hint:'בניין מגורים עם חיפוי טרקוטה כתום ייחודי בתל אביב',           lat:32.0921, lng:34.7821, url:u('14_זלטופולסקי_21_תל_אביב.jpg') },
+  { name:'רמת גן — מגדלים',           hint:'שני מגדלים גבוהים מאוד מזכוכית לבנה ברמת גן',                 lat:32.0800, lng:34.8100, url:u('15_רמת_גן_—_מגדלים.jpg') },
+  { name:'ויצמן 44-46, נתניה',         hint:'מגדל מגורים גבוה ברחוב ויצמן בנתניה',                         lat:32.3320, lng:34.8580, url:u('16_ויצמן_44-46_נתניה.jpg') },
+  { name:'כרמל-גלבוע, נתניה',          hint:'בניין מגורים גבוה עם חיפוי אפור-לבן בנתניה',                  lat:32.3250, lng:34.8560, url:u('17_כרמל-גלבוע_נתניה.jpg') },
+  { name:'בוקרשט, רומניה',             hint:'בניין מגורים מודרני בבוקרשט, רומניה',                          lat:44.4268, lng:26.1025, url:u('18_בוקרשט_רומניה.jpg') },
+  { name:'חביב אבשלום 3, ת"א',        hint:'מגדל מגורים יוקרתי בצפון תל אביב עם בלקונות רחבות',           lat:32.0998, lng:34.7832, url:u('19_חביב_אבשלום_3_תל_אביב.jpg') },
+  { name:'וכטנגוב 11, ת"א',           hint:'בניין מגורים בצבע חמרה עם בלקונות עץ ברחוב וכטנגוב',          lat:32.0812, lng:34.7798, url:u('20_וכטנגוב_11_תל_אביב.jpg') },
+  { name:'סוקולוב 71, רמת השרון',     hint:'בניין מסחרי לבן עם קווים אלכסוניים גדולים על הפסאדה',          lat:32.1468, lng:34.8386, url:u('21_סוקולוב_71_רמת_השרון.jpg') },
+  { name:'בן גוריון 124, רמת גן',     hint:'בניין מגורים לבן ומודרני ברחוב בן גוריון ברמת גן',             lat:32.0831, lng:34.8190, url:u('22_בן_גוריון_124_רמת_גן.jpg') },
+  { name:'ביאליק 136, רמת גן',        hint:'בניין לבן מודרני עם קומת מסחר ברחוב הראשי של רמת גן',          lat:32.0855, lng:34.8232, url:u('24_ביאליק_136_רמת_גן.jpg') },
+  { name:'למדן 11-13, ת"א',           hint:'בניין מגורים בצבעוניות כהה-בהירה באזור בבלי תל אביב',          lat:32.1031, lng:34.7845, url:u('25_למדן_11-13_תל_אביב.jpg') },
+  { name:'זלטופולסקי 22-24, ת"א',     hint:'בניין מגורים עם חזית זכוכית שקופה ומרפסות ירוקות',             lat:32.0918, lng:34.7825, url:u('26_זלטופולסקי_22-24_תל_אביב.jpg') },
+  { name:'השפלה 6, רמת השרון',        hint:'בניין מגורים לבן עם מרפסות בולטות ברמת השרון',                 lat:32.1510, lng:34.8412, url:u('27_השפלה_6_רמת_השרון.jpg') },
+  { name:'הגוש הגדול, ת"א',           hint:'בניין מגורים לבן עם חיפוי אבן ומרפסות בולטות',                  lat:32.0730, lng:34.7680, url:u('28_הגוש_הגדול_תל_אביב.jpg') },
+  { name:'Novi Dom, Belgrade',         hint:'פרויקט מגורים בבלגרד עם חיפוי אפור-לבן מודרני',               lat:44.8076, lng:20.4617, url:u('29_Novi_Dom_Belgrade.jpg') },
+  { name:'AFI Home, Bucharest',        hint:'פרויקט מגורים יוקרתי בבוקרשט עם גינה מרכזית',                 lat:44.4268, lng:26.0785, url:u('30_AFI_Home_Bucharest.jpg') },
+  { name:'Airport City Belgrade',      hint:'מתחם משרדים ענק ליד שדה התעופה של בלגרד, סרביה',              lat:44.8147, lng:20.2892, url:u('32_Airport_City_Belgrade.jpg') },
+  { name:'Central Garden Belgrade',    hint:'בניין משרדים זכוכית שחור-לבן בבלגרד',                          lat:44.8125, lng:20.4612, url:u('35_Central_Garden_Belgrade.jpg') },
+  { name:'נווה דקלים פלפון, רעננה',   hint:'מגדל משרדים של פלאפון באזור התעשייה של רעננה',                 lat:32.1879, lng:34.8712, url:u('36_נווה_דקלים_פלפון_רעננה.jpg') },
+  { name:'מגדל אלקטרה סיטי, ת"א',    hint:'מגדל משרדים גבוה מאוד בדרום תל אביב',                          lat:32.0561, lng:34.7756, url:u('37_מגדל_אלקטרה_סיטי_תל_אביב.jpg') },
+  { name:'סופיה, בולגריה',             hint:'מגדל משרדים עגול ומרשים בסופיה, בולגריה',                      lat:42.6977, lng:23.3219, url:u('38_סופיה_בולגריה.jpg') },
+  { name:'הברזל 29, ת"א',             hint:'בניין משרדים באזור רמת החייל — שוכן שם חברת Comverse',         lat:32.1128, lng:34.8378, url:u('40_הברזל_29_תל_אביב.jpg') },
+  { name:'הנחושת 6, ת"א',             hint:'בניין משרדים ייחודי באזור רמת החייל, צפון תל אביב',            lat:32.1197, lng:34.8352, url:u('41_הנחושת_6_תל_אביב.jpg') },
+  { name:'ולנברג 6-8-10, ת"א',        hint:'מתחם שלושה בניני זכוכית כחולים ברחוב ולנברג תל אביב',          lat:32.0979, lng:34.7889, url:u('43_ולנברג_6-8-10_תל_אביב.jpg') },
+  { name:'גבעת סביון, גני תקווה',     hint:'מרכז קניות עם פסים אדום-לבן ייחודיים בגני תקווה',              lat:32.0556, lng:34.8703, url:u('48_גבעת_סביון_גני_תקווה.jpg') },
+  { name:'גבעת שמואל',                hint:'מרכז מסחרי פתוח עם עמודים ודקלים בגבעת שמואל',                lat:32.0771, lng:34.8468, url:u('49_גבעת_שמואל.jpg') },
+  { name:'סוקולוב, רמת השרון',        hint:'מרכז מסחרי עגול ועתידני ברמת השרון עם תאורת לילה מרהיבה',      lat:32.1461, lng:34.8391, url:u('51_סוקולוב_רמת_השרון.jpg') },
+  { name:'סוהו, נתניה',               hint:'מרכז מסחרי עם חזית זכוכית צבעונית וכיכר מרכזית בנתניה',        lat:32.3215, lng:34.8532, url:u('52_סוהו_נתניה.jpg') },
+  { name:'מטרופולין, נתניה',           hint:'מגדל ומרכז עסקים ענק בנתניה',                                   lat:32.3289, lng:34.8601, url:u('53_מטרופולין_נתניה.jpg') },
+  { name:'מרכז G צמרות, ת"א',         hint:'מרכז קניות G בצמרות תל אביב עם עמודים לבנים וחזית זכוכית',     lat:32.1021, lng:34.7913, url:u('54_מרכז_G_צמרות_תל_אביב.jpg') },
+  { name:'מרכז מסחרי צמרות, ת"א',    hint:'מרכז קניות צמרות תל אביב — הבניין הבנוי',                       lat:32.1018, lng:34.7910, url:u('55_מרכז_מסחרי_צמרות_תל_אביב.jpg') },
+];
+
+const COLORS = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#a855f7','#ec4899'];
+let players=[], shuffled=[], roundIdx=0, turnIdx=0;
+let hintUsed=false, roundGuesses=[], totalScores={};
+let map, correctMarker, lineLayer, timerInt=null, timeLeft=60;
+let currentPin=null, gamePhase='setup';
+
+function addPlayer(){
+  if(players.length>=6)return;
+  players.push({name:`שחקן ${players.length+1}`,color:COLORS[players.length]});
+  renderPlayers();
+}
+function renderPlayers(){
+  document.getElementById('plist').innerHTML=players.map((p,i)=>`
+    <div class="prow">
+      <div class="cdot" style="background:${p.color}"></div>
+      <input value="${p.name}" oninput="players[${i}].name=this.value||'שחקן ${i+1}'"/>
+    </div>`).join('');
+}
+function startGame(){
+  if(!players.length){alert('הוסף לפחות שחקן אחד!');return;}
+  players.forEach(p=>totalScores[p.name]=0);
+  shuffled=[...BUILDINGS].sort(()=>Math.random()-0.5).slice(0,10);
+  roundIdx=0;
+  document.getElementById('splash').style.display='none';
+  document.getElementById('game').style.display='flex';
+  initMap(); beginRound();
+}
+function initMap(){
+  map=L.map('map',{center:[32.0,34.8],zoom:7});
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(map);
+  map.on('click',e=>{if(gamePhase==='playing')placePin(e.latlng.lat,e.latlng.lng);});
+}
+function placePin(lat,lng){
+  const p=players[turnIdx]; if(!p)return;
+  if(currentPin)map.removeLayer(currentPin);
+  currentPin=L.circleMarker([lat,lng],{radius:13,fillColor:p.color,color:'white',weight:3,fillOpacity:0.92})
+    .addTo(map).bindPopup(p.name).openPopup();
+  document.getElementById('gbtn').disabled=false;
+}
+function beginRound(){
+  gamePhase='playing'; roundGuesses=[]; turnIdx=0; hintUsed=false;
+  if(currentPin){map.removeLayer(currentPin);currentPin=null;}
+  if(correctMarker){map.removeLayer(correctMarker);correctMarker=null;}
+  if(lineLayer){map.removeLayer(lineLayer);lineLayer=null;}
+  map.setView([32.0,34.8],7);
+  const b=shuffled[roundIdx];
+  document.getElementById('round-info').textContent=`סיבוב ${roundIdx+1} / ${shuffled.length}`;
+  const img=document.getElementById('bimg');
+  const fb=document.getElementById('imgfb');
+  img.style.display='block'; fb.style.display='none';
+  img.onerror=()=>{
+    img.style.display='none'; fb.style.display='flex';
+    document.getElementById('fbname').textContent=b.name;
+    document.getElementById('fbdesc').textContent=b.hint;
+  };
+  img.src=b.url;
+  document.getElementById('htext').textContent='💡 לחץ לקבלת רמז (−30% ניקוד)';
+  document.getElementById('hbtn').disabled=false;
+  document.getElementById('gbtn').disabled=true;
+  updateScoreboard(); activateTurn();
+}
+function activateTurn(){
+  const p=players[turnIdx];
+  if(!p){endRound();return;}
+  hintUsed=false;
+  if(currentPin){map.removeLayer(currentPin);currentPin=null;}
+  document.getElementById('htext').textContent='💡 לחץ לקבלת רמז (−30% ניקוד)';
+  document.getElementById('hbtn').disabled=false;
+  document.getElementById('gbtn').disabled=true;
+  const pn=document.getElementById('pname');
+  pn.textContent=`🎯 תור של: ${p.name}`; pn.style.color=p.color;
+  startTimer();
+}
+function startTimer(){
+  clearInterval(timerInt); timeLeft=60;
+  const el=document.getElementById('timer');
+  el.textContent=`⏱ ${timeLeft}`; el.style.color='#f59e0b';
+  timerInt=setInterval(()=>{
+    timeLeft--;
+    el.textContent=`⏱ ${timeLeft}`;
+    el.style.color=timeLeft<=10?'#ef4444':'#f59e0b';
+    if(timeLeft<=0){clearInterval(timerInt);timeExpired();}
+  },1000);
+}
+function timeExpired(){
+  if(!currentPin)recordGuess(null,null,null,0);
+  else doRecord();
+}
+function showHint(){
+  hintUsed=true;
+  document.getElementById('htext').textContent=`💡 ${shuffled[roundIdx].hint}`;
+  document.getElementById('hbtn').disabled=true;
+}
+function submitGuess(){
+  if(!currentPin)return;
+  clearInterval(timerInt); doRecord();
+}
+function doRecord(){
+  const b=shuffled[roundIdx];
+  const ll=currentPin.getLatLng();
+  const dist=haversine(ll.lat,ll.lng,b.lat,b.lng);
+  let pts=calcPts(dist);
+  if(hintUsed)pts=Math.floor(pts*0.7);
+  recordGuess(ll.lat,ll.lng,dist,pts);
+}
+function recordGuess(lat,lng,dist,pts){
+  const p=players[turnIdx];
+  if(p)roundGuesses.push({player:p,lat,lng,dist,pts,hintUsed});
+  if(currentPin){map.removeLayer(currentPin);currentPin=null;}
+  document.getElementById('gbtn').disabled=true;
+  turnIdx++;
+  if(turnIdx<players.length)activateTurn();
+  else endRound();
+}
+function endRound(){
+  clearInterval(timerInt); gamePhase='results';
+  const b=shuffled[roundIdx];
+  correctMarker=L.marker([b.lat,b.lng],{
+    icon:L.divIcon({className:'',
+      html:`<div style="background:#fbbf24;color:#000;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:0.95rem;border:3px solid white;font-weight:900;">✓</div>`,
+      iconSize:[28,28],iconAnchor:[14,14]})
+  }).addTo(map).bindPopup(`📍 ${b.name}`).openPopup();
+  lineLayer=L.layerGroup().addTo(map);
+  const bounds=[[b.lat,b.lng]];
+  roundGuesses.forEach(g=>{
+    if(g.lat!==null){
+      L.circleMarker([g.lat,g.lng],{radius:10,fillColor:g.player.color,color:'white',weight:2,fillOpacity:0.9})
+        .addTo(lineLayer).bindPopup(`${g.player.name}: ${Math.round(g.dist)} ק"מ — ${g.pts} נק'`);
+      L.polyline([[b.lat,b.lng],[g.lat,g.lng]],{color:g.player.color,weight:2,dashArray:'5,4'}).addTo(lineLayer);
+      bounds.push([g.lat,g.lng]);
+    }
+  });
+  if(bounds.length>1)map.fitBounds(L.latLngBounds(bounds),{padding:[40,40]});
+  roundGuesses.forEach(g=>{totalScores[g.player.name]=(totalScores[g.player.name]||0)+g.pts;});
+  updateScoreboard();
+  const sorted=[...roundGuesses].sort((a,c)=>c.pts-a.pts);
+  document.getElementById('restitle').textContent=`📍 ${b.name}`;
+  document.getElementById('rescards').innerHTML=sorted.map(g=>`
+    <div class="rcard">
+      <div class="rplayer">
+        <div class="rdot" style="background:${g.player.color}"></div>
+        <strong>${g.player.name}</strong>
+        ${g.hintUsed?'<span style="color:#fbbf24;font-size:0.7rem;margin-right:6px;">💡</span>':''}
+      </div>
+      <div style="text-align:left">
+        <div class="rpts">+${g.pts}</div>
+        <div class="rdist">${g.dist!==null?Math.round(g.dist)+' ק"מ':'לא ניחש'}</div>
+      </div>
+    </div>`).join('');
+  document.getElementById('resover').style.display='block';
+}
+function nextRound(){
+  document.getElementById('resover').style.display='none';
+  roundIdx++;
+  if(roundIdx>=shuffled.length)showFinal();
+  else beginRound();
+}
+function showFinal(){
+  gamePhase='final';
+  const sorted=players.map(p=>({...p,pts:totalScores[p.name]||0})).sort((a,b)=>b.pts-a.pts);
+  document.getElementById('franks').innerHTML=sorted.map((p,i)=>`
+    <div class="frank ${i===0?'f1':'fx'}">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="background:${p.color};width:13px;height:13px;border-radius:50%"></div>
+        <span>${i===0?'🏆 ':i===1?'🥈 ':i===2?'🥉 ':''}${p.name}</span>
+      </div>
+      <span>${p.pts} נקודות</span>
+    </div>`).join('');
+  document.getElementById('finover').style.display='block';
+}
+function updateScoreboard(){
+  document.getElementById('scoreboard').innerHTML=players.map(p=>`
+    <div class="schip">
+      <div class="sdot" style="background:${p.color}"></div>
+      <span>${p.name}: <strong>${totalScores[p.name]||0}</strong></span>
+    </div>`).join('');
+}
+function haversine(lat1,lng1,lat2,lng2){
+  const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function calcPts(d){
+  if(d<0.5)return 500; if(d<2)return Math.round(500-d*50);
+  if(d<10)return Math.round(400-d*15); if(d<50)return Math.max(100,Math.round(250-d*3));
+  if(d<200)return Math.max(10,Math.round(100-d*0.4)); return 0;
+}
+addPlayer(); addPlayer();
+</script>
+</body>
+</html>
