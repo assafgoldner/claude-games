@@ -51,7 +51,7 @@ html,body { height:100%; overflow:hidden; font-family:'Segoe UI',Arial,sans-seri
 #g-timer { font-size:1rem; font-weight:700; color:#f59e0b; margin-right:auto; }
 #g-score { font-size:0.8rem; background:#0f172a; border-radius:20px; padding:3px 10px; }
 
-#img-strip { position:relative; width:100%; height:36vw; max-height:190px; flex-shrink:0; overflow:hidden; background:#0f172a; }
+#img-strip { position:relative; width:100%; height:52vw; max-height:280px; flex-shrink:0; overflow:hidden; background:#0f172a; }
 #bimg { width:100%; height:100%; object-fit:cover; }
 #imgfb { display:none; position:absolute; inset:0; background:linear-gradient(135deg,#0f172a,#1e3a5f); flex-direction:column; align-items:center; justify-content:center; padding:12px; text-align:center; }
 
@@ -261,6 +261,7 @@ let gameState=null, myScore=0, myGuessedThisRound=false;
 let map=null, myPin=null, resMap=null;
 let timerInt=null, pollInt=null, hintUsed=false;
 let selCountries=new Set(), selCities=new Set(), selTypes=new Set(), selRounds=10;
+let lastKnownRound=-1, lastKnownStatus='';
 
 // ── TOAST ────────────────────────────────────────
 function toast(msg, dur=3000) {
@@ -287,7 +288,8 @@ function initFilters() {
 }
 function renderChips(id,items,sel) {
   document.getElementById(id).innerHTML=items.map(v=>
-    `<div class="chip" onclick="toggleChip(this,'${v}','${id}')">${v}</div>`).join('');
+    `<div class="chip on" onclick="toggleChip(this,'${v}','${id}')">${v}</div>`).join('');
+  // all selected by default = empty set means "all"
 }
 function renderRoundChips() {
   const opts=[5,8,10,15,'הכל'];
@@ -391,11 +393,43 @@ function startPolling() {
     const room=await sbGet(roomCode);
     if(!room)return;
     gameState=room;
-    if(room.status==='lobby'){renderLobbyPlayers();return;}
-    if(room.status==='playing'&&document.getElementById('s-lobby').classList.contains('active')){startGame();return;}
-    if(room.status==='playing'){checkWaiting();return;}
-    if(room.status==='results'&&!document.getElementById('s-results').classList.contains('active')){showResults();return;}
-    if(room.status==='final'&&!document.getElementById('s-final').classList.contains('active')){showFinal();}
+
+    if(room.status==='lobby'){
+      renderLobbyPlayers(); return;
+    }
+
+    // left lobby → enter game
+    if(document.getElementById('s-lobby').classList.contains('active')){
+      lastKnownRound=room.roundIdx;
+      lastKnownStatus=room.status;
+      startGame(); return;
+    }
+
+    // status changed to results
+    if(room.status==='results' && lastKnownStatus!=='results'){
+      lastKnownStatus='results';
+      showResults(); return;
+    }
+
+    // host moved to next round (roundIdx changed) or status back to playing
+    if(room.status==='playing'){
+      if(room.roundIdx !== lastKnownRound){
+        // new round!
+        lastKnownRound=room.roundIdx;
+        lastKnownStatus='playing';
+        myGuessedThisRound=false;
+        show('s-game');
+        beginRound();
+        return;
+      }
+      // same round, check waiting count
+      if(myGuessedThisRound) checkWaiting();
+    }
+
+    if(room.status==='final' && lastKnownStatus!=='final'){
+      lastKnownStatus='final';
+      showFinal();
+    }
   },2000);
 }
 
@@ -411,6 +445,8 @@ function initMap() {
 
 function beginRound() {
   myGuessedThisRound=false; hintUsed=false;
+  lastKnownRound=gameState.roundIdx;
+  lastKnownStatus='playing';
   if(myPin){map.removeLayer(myPin);myPin=null;}
   document.getElementById('waiting-overlay').classList.remove('show');
   document.getElementById('hint-bar').style.display='none';
