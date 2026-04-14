@@ -7,92 +7,94 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; overflow: hidden; font-family: 'Segoe UI', Arial, sans-serif; background: #0f172a; color: #f1f5f9; direction: rtl; }
-
-/* ── SCREENS ── */
+* { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+html,body { height:100%; overflow:hidden; font-family:'Segoe UI',Arial,sans-serif; background:#0f172a; color:#f1f5f9; direction:rtl; }
 .screen { display:none; position:fixed; inset:0; flex-direction:column; overflow-y:auto; }
 .screen.active { display:flex; }
 
-/* ── SPLASH ── */
-#s-splash { background:linear-gradient(160deg,#0f172a,#1e3a5f); align-items:center; justify-content:center; gap:20px; padding:24px; }
+/* SPLASH */
+#s-splash { background:linear-gradient(160deg,#0f172a,#1e3a5f); align-items:center; justify-content:center; gap:18px; padding:24px; }
 #s-splash h1 { font-size:2.4rem; font-weight:900; color:#38bdf8; text-align:center; }
-#s-splash .sub { color:#94a3b8; font-size:0.95rem; text-align:center; }
-#s-splash .firm { color:#64748b; font-size:0.85rem; font-weight:700; text-align:center; }
+.sub { color:#94a3b8; font-size:0.95rem; text-align:center; }
+.firm { color:#64748b; font-size:0.85rem; font-weight:700; text-align:center; }
 .card { background:#1e293b; border-radius:18px; padding:22px; width:100%; max-width:400px; }
-.card h2 { color:#38bdf8; margin-bottom:16px; font-size:1rem; }
+.card h2 { color:#38bdf8; margin-bottom:14px; font-size:1rem; }
 .big-btn { background:linear-gradient(135deg,#0ea5e9,#6366f1); color:#fff; border:none; border-radius:14px; padding:16px; font-size:1.05rem; font-weight:700; cursor:pointer; width:100%; margin-top:10px; }
+.big-btn:active { opacity:0.85; }
 .sec-btn { background:#1e293b; color:#94a3b8; border:1px solid #334155; border-radius:14px; padding:14px; font-size:0.95rem; cursor:pointer; width:100%; margin-top:8px; }
 .inp { background:#0f172a; border:1px solid #334155; border-radius:10px; padding:13px 14px; color:#f1f5f9; font-size:1rem; width:100%; margin-bottom:10px; }
 .inp:focus { outline:none; border-color:#38bdf8; }
 .code-display { font-size:3rem; font-weight:900; color:#38bdf8; text-align:center; letter-spacing:12px; margin:12px 0; }
+.divider { text-align:center; color:#475569; font-size:0.8rem; margin:4px 0; }
 
-/* ── FILTER ── */
-#s-filter { background:#0f172a; padding:16px; gap:12px; }
-#s-filter h2 { color:#38bdf8; font-size:1.1rem; margin-bottom:4px; }
-.filter-section { background:#1e293b; border-radius:14px; padding:16px; }
-.filter-section h3 { color:#94a3b8; font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
+/* FILTER */
+#s-filter { background:#0f172a; padding:16px; gap:10px; }
+#s-filter h2 { color:#38bdf8; font-size:1.1rem; }
+.fsec { background:#1e293b; border-radius:14px; padding:14px; }
+.fsec h3 { color:#94a3b8; font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
 .chips { display:flex; flex-wrap:wrap; gap:8px; }
-.chip { background:#0f172a; border:1px solid #334155; border-radius:20px; padding:8px 14px; font-size:0.85rem; cursor:pointer; transition:all 0.15s; }
+.chip { background:#0f172a; border:1px solid #334155; border-radius:20px; padding:8px 14px; font-size:0.85rem; cursor:pointer; user-select:none; }
 .chip.on { background:#0ea5e9; border-color:#0ea5e9; color:#fff; font-weight:600; }
-.rounds-row { display:flex; gap:8px; }
 .rounds-row .chip { flex:1; text-align:center; }
 
-/* ── LOBBY ── */
+/* LOBBY */
 #s-lobby { background:#0f172a; align-items:center; justify-content:center; padding:24px; gap:16px; }
-#s-lobby .card { max-width:380px; }
 .player-list { display:flex; flex-direction:column; gap:8px; margin-top:8px; }
 .player-item { display:flex; align-items:center; gap:10px; background:#0f172a; border-radius:10px; padding:10px 14px; }
 .pdot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
 
-/* ── GAME ── */
+/* GAME */
 #s-game { background:#0f172a; overflow:hidden; }
 #game-top { background:#1e293b; padding:8px 12px; display:flex; align-items:center; gap:8px; flex-shrink:0; border-bottom:1px solid #334155; }
-#game-top .ttitle { font-size:0.85rem; font-weight:700; color:#38bdf8; }
+.ttitle { font-size:0.85rem; font-weight:700; color:#38bdf8; }
 #g-round { font-size:0.75rem; color:#94a3b8; }
 #g-timer { font-size:1rem; font-weight:700; color:#f59e0b; margin-right:auto; }
-#g-score-me { font-size:0.8rem; background:#0f172a; border-radius:20px; padding:3px 10px; }
+#g-score { font-size:0.8rem; background:#0f172a; border-radius:20px; padding:3px 10px; }
 
-#img-strip { position:relative; width:100%; height:38vw; max-height:200px; flex-shrink:0; background:#0f172a; overflow:hidden; }
+#img-strip { position:relative; width:100%; height:36vw; max-height:190px; flex-shrink:0; overflow:hidden; background:#0f172a; }
 #bimg { width:100%; height:100%; object-fit:cover; }
 #imgfb { display:none; position:absolute; inset:0; background:linear-gradient(135deg,#0f172a,#1e3a5f); flex-direction:column; align-items:center; justify-content:center; padding:12px; text-align:center; }
+
+#hint-bar { background:#1e2d1a; padding:6px 12px; font-size:0.78rem; color:#fbbf24; display:none; flex-shrink:0; }
 
 #map-area { flex:1; position:relative; min-height:0; }
 #map { width:100%; height:100%; }
 #map-tip { position:absolute; top:8px; left:50%; transform:translateX(-50%); background:rgba(15,23,42,0.88); color:#94a3b8; padding:4px 12px; border-radius:20px; font-size:0.72rem; z-index:500; pointer-events:none; white-space:nowrap; }
 
+#waiting-overlay { display:none; position:absolute; inset:0; background:rgba(15,23,42,0.92); z-index:600; flex-direction:column; align-items:center; justify-content:center; gap:12px; }
+#waiting-overlay.show { display:flex; }
+.spinner { width:38px; height:38px; border:3px solid #334155; border-top-color:#38bdf8; border-radius:50%; animation:spin 0.8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
 #bottom-bar { background:#1e293b; padding:10px 12px; display:flex; gap:8px; flex-shrink:0; border-top:1px solid #334155; }
-#btn-hint { background:#78350f; color:#fbbf24; border:none; border-radius:10px; padding:10px 14px; font-size:0.8rem; cursor:pointer; flex-shrink:0; }
+#btn-hint { background:#78350f; color:#fbbf24; border:none; border-radius:10px; padding:10px 14px; font-size:0.8rem; cursor:pointer; flex-shrink:0; white-space:nowrap; }
 #btn-hint:disabled { opacity:0.4; }
 #btn-guess { background:linear-gradient(135deg,#16a34a,#15803d); color:#fff; border:none; border-radius:10px; padding:10px; font-size:0.9rem; font-weight:700; cursor:pointer; flex:1; }
 #btn-guess:disabled { background:#1e3a2e; color:#4b5563; }
 
-#hint-bar { background:#1e293b; padding:6px 12px; font-size:0.78rem; color:#fbbf24; min-height:28px; flex-shrink:0; display:none; }
-
-/* waiting overlay */
-#waiting-overlay { display:none; position:absolute; inset:0; background:rgba(15,23,42,0.92); z-index:600; flex-direction:column; align-items:center; justify-content:center; gap:12px; }
-#waiting-overlay.show { display:flex; }
-.spinner { width:40px; height:40px; border:3px solid #334155; border-top-color:#38bdf8; border-radius:50%; animation:spin 0.8s linear infinite; }
-@keyframes spin { to { transform:rotate(360deg); } }
-
-/* ── RESULTS ── */
-#s-results { background:#0f172a; padding:16px; gap:12px; }
-#s-results h2 { color:#38bdf8; font-size:1.1rem; }
-.rcard { background:#1e293b; border-radius:12px; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; }
-.rplayer { display:flex; align-items:center; gap:8px; font-size:0.9rem; }
+/* RESULTS */
+#s-results { background:#0f172a; padding:14px; gap:10px; }
+#s-results h2 { color:#38bdf8; font-size:1rem; }
+.rcard { background:#1e293b; border-radius:12px; padding:11px 14px; display:flex; align-items:center; justify-content:space-between; }
+.rplayer { display:flex; align-items:center; gap:8px; font-size:0.88rem; }
 .rdot { width:11px; height:11px; border-radius:50%; flex-shrink:0; }
-.rpts { font-size:1.1rem; font-weight:900; color:#38bdf8; }
+.rpts { font-size:1.05rem; font-weight:900; color:#38bdf8; }
 .rdist { font-size:0.72rem; color:#94a3b8; }
 
-/* ── FINAL ── */
-#s-final { background:linear-gradient(160deg,#0f172a,#1e3a5f); align-items:center; justify-content:center; padding:24px; gap:16px; }
+/* FINAL */
+#s-final { background:linear-gradient(160deg,#0f172a,#1e3a5f); align-items:center; justify-content:center; padding:24px; gap:14px; }
 #s-final h1 { font-size:2rem; color:#fbbf24; text-align:center; }
-.frank { padding:12px 18px; border-radius:12px; margin:6px 0; display:flex; align-items:center; justify-content:space-between; font-size:0.95rem; width:100%; max-width:380px; }
+.frank { padding:12px 18px; border-radius:12px; margin:5px 0; display:flex; align-items:center; justify-content:space-between; font-size:0.95rem; width:100%; max-width:380px; }
 .frank.f1 { background:#78350f; color:#fbbf24; font-weight:900; }
 .frank.fx { background:#1e293b; }
+
+/* ERROR TOAST */
+#toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#ef4444; color:#fff; padding:10px 20px; border-radius:12px; font-size:0.9rem; z-index:9999; display:none; white-space:nowrap; }
 </style>
 </head>
 <body>
+
+<div id="toast"></div>
 
 <!-- SPLASH -->
 <div id="s-splash" class="screen active">
@@ -103,578 +105,6 @@ html, body { height: 100%; overflow: hidden; font-family: 'Segoe UI', Arial, san
     <h2>שמך</h2>
     <input class="inp" id="my-name" placeholder="הכנס את שמך" maxlength="20"/>
     <button class="big-btn" onclick="goCreate()">🏠 צור חדר חדש</button>
-    <div style="text-align:center;color:#475569;font-size:0.8rem;margin:10px 0">או</div>
-    <input class="inp" id="join-code" placeholder="קוד חדר (4 ספרות)" maxlength="4" style="text-align:center;font-size:1.3rem;letter-spacing:6px"/>
-    <button class="sec-btn" onclick="goJoin()">🚪 הצטרף לחדר</button>
-  </div>
-</div>
-
-<!-- FILTER (host only) -->
-<div id="s-filter" class="screen">
-  <h2>⚙️ הגדרות המשחק</h2>
-
-  <div class="filter-section">
-    <h3>🌍 מדינה</h3>
-    <div class="chips" id="f-country"></div>
-  </div>
-  <div class="filter-section">
-    <h3>🏙️ עיר</h3>
-    <div class="chips" id="f-city"></div>
-  </div>
-  <div class="filter-section">
-    <h3>🏛️ סוג בניין</h3>
-    <div class="chips" id="f-type"></div>
-  </div>
-  <div class="filter-section">
-    <h3>🔢 מספר סיבובים</h3>
-    <div class="chips rounds-row" id="f-rounds"></div>
-  </div>
-
-  <button class="big-btn" onclick="createRoom()" style="max-width:400px;align-self:center">✅ צור חדר</button>
-</div>
-
-<!-- LOBBY -->
-<div id="s-lobby" class="screen">
-  <div class="card">
-    <h2>⏳ ממתינים לשחקנים...</h2>
-    <div style="color:#94a3b8;font-size:0.85rem;margin-bottom:4px">קוד החדר:</div>
-    <div class="code-display" id="lobby-code">----</div>
-    <div style="color:#64748b;font-size:0.78rem;text-align:center;margin-bottom:16px">שתף עם החברים</div>
-    <div class="player-list" id="lobby-players"></div>
-    <button class="big-btn" id="btn-start-game" onclick="hostStartGame()" style="margin-top:16px;display:none">▶ התחל משחק!</button>
-    <div id="lobby-wait-msg" style="color:#94a3b8;font-size:0.85rem;text-align:center;margin-top:12px">ממתין למנחה להתחיל...</div>
-  </div>
-</div>
-
-<!-- GAME -->
-<div id="s-game" class="screen">
-  <div id="game-top">
-    <div class="ttitle">🏛️ היכן זה?</div>
-    <div id="g-round">סיבוב 1</div>
-    <div id="g-timer">⏱ 60</div>
-    <div id="g-score-me">0 נק'</div>
-  </div>
-  <div id="img-strip">
-    <img id="bimg" src="" alt="בניין"/>
-    <div id="imgfb">
-      <div style="font-size:2rem;margin-bottom:6px">🏛️</div>
-      <div id="fbname" style="font-size:0.9rem;font-weight:700;color:#38bdf8;margin-bottom:4px"></div>
-      <div id="fbdesc" style="font-size:0.75rem;color:#94a3b8;line-height:1.4"></div>
-    </div>
-  </div>
-  <div id="hint-bar"></div>
-  <div id="map-area">
-    <div id="map-tip">הקש על המפה לסימון מיקום</div>
-    <div id="map"></div>
-    <div id="waiting-overlay">
-      <div class="spinner"></div>
-      <div style="color:#94a3b8;font-size:0.9rem">ממתין לשאר השחקנים...</div>
-      <div id="wait-count" style="color:#38bdf8;font-size:0.85rem"></div>
-    </div>
-  </div>
-  <div id="bottom-bar">
-    <button id="btn-hint" onclick="useHint()">💡 רמז</button>
-    <button id="btn-guess" onclick="submitGuess()" disabled>📍 אישור ניחוש</button>
-  </div>
-</div>
-
-<!-- RESULTS -->
-<div id="s-results" class="screen">
-  <h2 id="res-title">תוצאות</h2>
-  <div id="res-cards"></div>
-  <div id="res-map" style="height:220px;border-radius:14px;overflow:hidden;"></div>
-  <button class="big-btn" id="btn-next" onclick="nextRound()">הסיבוב הבא ←</button>
-  <div id="next-wait" style="color:#94a3b8;font-size:0.85rem;text-align:center;display:none">ממתין למנחה...</div>
-</div>
-
-<!-- FINAL -->
-<div id="s-final" class="screen">
-  <h1>🏆 סוף המשחק!</h1>
-  <div id="final-ranks" style="width:100%;max-width:380px;display:flex;flex-direction:column;align-items:center"></div>
-  <button class="big-btn" onclick="location.reload()" style="max-width:380px">🔄 משחק חדש</button>
-</div>
-
-<script>
-// ═══════════════════════════════════
-// DATA
-// ═══════════════════════════════════
-const IMG = 'https://assafgoldner.github.io/claude-games/';
-const BUILDINGS = [
-  { name:'דרך הים, גני תקווה',       hint:'פרויקט מגורים גבוה לאורך הכביש הראשי בגני תקווה',   lat:32.0612,lng:34.8718, img:'03_דרך_הים_גני_תקווה.jpg',          country:'ישראל', city:'גני תקווה',    type:'מגורים' },
-  { name:'אבא קובנר 1-3, ת"א',       hint:'בניין מגורים קלאסי עם אבן בהירה בתל אביב',           lat:32.0620,lng:34.7721, img:'04_אבא_קובנר_1-3_תל_אביב.jpg',     country:'ישראל', city:'תל אביב',      type:'מגורים' },
-  { name:'יהודה מרגוזה 27, יפו',     hint:'בניין מגורים צהוב-שמנת עם בלקונות עגולות ביפו',     lat:32.0494,lng:34.7530, img:'05_יהודה_מרגוזה_27_יפו.jpg',        country:'ישראל', city:'תל אביב',      type:'מגורים' },
-  { name:'מודיעין 14-16, קריית אונו', hint:'בניין מגורים נמוך עם אבן לבנה בקריית אונו',          lat:32.0553,lng:34.8606, img:'06_מודיעין_14-16_קריית_אונו.jpg',   country:'ישראל', city:'קריית אונו',   type:'מגורים' },
-  { name:'רמת השרון',                 hint:'שני מגדלי מגורים לבנים גבוהים ברמת השרון',           lat:32.1468,lng:34.8380, img:'07_רמת_השרון.jpg',                  country:'ישראל', city:'רמת השרון',    type:'מגורים' },
-  { name:'אלתרמן 2-4, ת"א',          hint:'בניין מגורים לבן-אפור עם גינה בצמוד לו',              lat:32.0870,lng:34.7812, img:'08_אלתרמן_2-4_תל_אביב.jpg',        country:'ישראל', city:'תל אביב',      type:'מגורים' },
-  { name:'סביוני המשתלה, ת"א',       hint:'פרויקט יוקרתי עם וילות ומגדלים, קרוב לשדה דב',       lat:32.1009,lng:34.7897, img:'09_סביוני_המשתלה_תל_אביב.jpg',     country:'ישראל', city:'תל אביב',      type:'מגורים' },
-  { name:'אבא קובנר 5, ת"א',         hint:'מגדל מגורים גבוה עם חיפוי אבן ועמוד זכוכית מרכזי',  lat:32.0625,lng:34.7718, img:'10_אבא_קובנר_5_תל_אביב.jpg',       country:'ישראל', city:'תל אביב',      type:'מגורים' },
-  { name:'בן יהודה 209, ת"א',        hint:'בניין משרדים עם חיפוי לבן-ירוק ברחוב בן יהודה',      lat:32.0971,lng:34.7742, img:'11_בן_יהודה_209_תל_אביב.jpg',       country:'ישראל', city:'תל אביב',      type:'משרדים' },
-  { name:'מנורה 4, ת"א',             hint:'בניין מגורים עגול ולבן — אחד המיוחדים בתל אביב',     lat:32.0592,lng:34.7594, img:'12_מנורה_4_תל_אביב.jpg',            country:'ישראל', city:'תל אביב',      type:'מגורים' },
-  { name:'זלטופולסקי 21, ת"א',       hint:'בניין מגורים עם חיפוי טרקוטה כתום ייחודי',           lat:32.0921,lng:34.7821, img:'14_זלטופולסקי_21_תל_אביב.jpg',      country:'ישראל', city:'תל אביב',      type:'מגורים' },
-  { name:'רמת גן — מגדלים',          hint:'שני מגדלים גבוהים מזכוכית לבנה ברמת גן',             lat:32.0800,lng:34.8100, img:'15_רמת_גן_—_מגדלים.jpg',            country:'ישראל', city:'רמת גן',       type:'מגורים' },
-  { name:'ויצמן 44-46, נתניה',        hint:'מגדל מגורים גבוה ברחוב ויצמן בנתניה',                lat:32.3320,lng:34.8580, img:'16_ויצמן_44-46_נתניה.jpg',          country:'ישראל', city:'נתניה',        type:'מגורים' },
-  { name:'כרמל-גלבוע, נתניה',         hint:'בניין מגורים עם חיפוי אפור-לבן בנתניה',               lat:32.3250,lng:34.8560, img:'17_כרמל-גלבוע_נתניה.jpg',           country:'ישראל', city:'נתניה',        type:'מגורים' },
-  { name:'בוקרשט, רומניה',            hint:'בניין מגורים מודרני בבוקרשט, רומניה',                 lat:44.4268,lng:26.1025, img:'18_בוקרשט_רומניה.jpg',              country:'רומניה', city:'בוקרשט',      type:'מגורים' },
-  { name:'חביב אבשלום 3, ת"א',       hint:'מגדל מגורים יוקרתי בצפון תל אביב עם בלקונות רחבות', lat:32.0998,lng:34.7832, img:'19_חביב_אבשלום_3_תל_אביב.jpg',     country:'ישראל', city:'תל אביב',      type:'מגורים' },
-  { name:'וכטנגוב 11, ת"א',          hint:'בניין מגורים חמרה עם בלקונות עץ ברחוב וכטנגוב',      lat:32.0812,lng:34.7798, img:'20_וכטנגוב_11_תל_אביב.jpg',         country:'ישראל', city:'תל אביב',      type:'מגורים' },
-  { name:'סוקולוב 71, רמת השרון',    hint:'בניין מסחרי לבן עם קווים אלכסוניים על הפסאדה',       lat:32.1468,lng:34.8386, img:'21_סוקולוב_71_רמת_השרון.jpg',       country:'ישראל', city:'רמת השרון',    type:'מסחרי' },
-  { name:'בן גוריון 124, רמת גן',    hint:'בניין מגורים לבן ומודרני ברחוב בן גוריון ברמת גן',   lat:32.0831,lng:34.8190, img:'22_בן_גוריון_124_רמת_גן.jpg',       country:'ישראל', city:'רמת גן',       type:'מגורים' },
-  { name:'ביאליק 136, רמת גן',       hint:'בניין לבן מודרני עם קומת מסחר ברמת גן',               lat:32.0855,lng:34.8232, img:'24_ביאליק_136_רמת_גן.jpg',          country:'ישראל', city:'רמת גן',       type:'מגורים' },
-  { name:'למדן 11-13, ת"א',          hint:'בניין מגורים כהה-בהיר באזור בבלי תל אביב',            lat:32.1031,lng:34.7845, img:'25_למדן_11-13_תל_אביב.jpg',         country:'ישראל', city:'תל אביב',      type:'מגורים' },
-  { name:'זלטופולסקי 22-24, ת"א',    hint:'בניין מגורים עם חזית זכוכית שקופה ומרפסות ירוקות',   lat:32.0918,lng:34.7825, img:'26_זלטופולסקי_22-24_תל_אביב.jpg',   country:'ישראל', city:'תל אביב',      type:'מגורים' },
-  { name:'השפלה 6, רמת השרון',       hint:'בניין מגורים לבן עם מרפסות בולטות ברמת השרון',        lat:32.1510,lng:34.8412, img:'27_השפלה_6_רמת_השרון.jpg',          country:'ישראל', city:'רמת השרון',    type:'מגורים' },
-  { name:'הגוש הגדול, ת"א',          hint:'בניין מגורים לבן עם חיפוי אבן ומרפסות בולטות',        lat:32.0730,lng:34.7680, img:'28_הגוש_הגדול_תל_אביב.jpg',         country:'ישראל', city:'תל אביב',      type:'מגורים' },
-  { name:'Novi Dom, Belgrade',        hint:'פרויקט מגורים בבלגרד עם חיפוי אפור-לבן מודרני',      lat:44.8076,lng:20.4617, img:'29_Novi_Dom_Belgrade.jpg',           country:'סרביה', city:'בלגרד',        type:'מגורים' },
-  { name:'AFI Home, Bucharest',       hint:'פרויקט מגורים יוקרתי בבוקרשט עם גינה מרכזית',        lat:44.4268,lng:26.0785, img:'30_AFI_Home_Bucharest.jpg',          country:'רומניה', city:'בוקרשט',      type:'מגורים' },
-  { name:'Airport City Belgrade',     hint:'מתחם משרדים ענק ליד שדה התעופה של בלגרד',             lat:44.8147,lng:20.2892, img:'32_Airport_City_Belgrade.jpg',       country:'סרביה', city:'בלגרד',        type:'משרדים' },
-  { name:'Central Garden Belgrade',   hint:'בניין משרדים זכוכית שחור-לבן בבלגרד',                 lat:44.8125,lng:20.4612, img:'35_Central_Garden_Belgrade.jpg',     country:'סרביה', city:'בלגרד',        type:'משרדים' },
-  { name:'נווה דקלים פלפון, רעננה',  hint:'מגדל משרדים של פלאפון באזור התעשייה של רעננה',        lat:32.1879,lng:34.8712, img:'36_נווה_דקלים_פלפון_רעננה.jpg',     country:'ישראל', city:'רעננה',        type:'משרדים' },
-  { name:'מגדל אלקטרה סיטי, ת"א',   hint:'מגדל משרדים גבוה מאוד בדרום תל אביב',                 lat:32.0561,lng:34.7756, img:'37_מגדל_אלקטרה_סיטי_תל_אביב.jpg',  country:'ישראל', city:'תל אביב',      type:'משרדים' },
-  { name:'סופיה, בולגריה',            hint:'מגדל משרדים עגול ומרשים בסופיה, בולגריה',              lat:42.6977,lng:23.3219, img:'38_סופיה_בולגריה.jpg',              country:'בולגריה', city:'סופיה',      type:'משרדים' },
-  { name:'הברזל 29, ת"א',            hint:'בניין משרדים באזור רמת החייל — חברת Comverse',        lat:32.1128,lng:34.8378, img:'40_הברזל_29_תל_אביב.jpg',           country:'ישראל', city:'תל אביב',      type:'משרדים' },
-  { name:'הנחושת 6, ת"א',            hint:'בניין משרדים ייחודי באזור רמת החייל',                  lat:32.1197,lng:34.8352, img:'41_הנחושת_6_תל_אביב.jpg',           country:'ישראל', city:'תל אביב',      type:'משרדים' },
-  { name:'ולנברג 6-8-10, ת"א',       hint:'מתחם שלושה בניני זכוכית ברחוב ולנברג',                lat:32.0979,lng:34.7889, img:'43_ולנברג_6-8-10_תל_אביב.jpg',      country:'ישראל', city:'תל אביב',      type:'משרדים' },
-  { name:'גבעת סביון, גני תקווה',    hint:'מרכז קניות עם פסים אדום-לבן ייחודיים',                lat:32.0556,lng:34.8703, img:'48_גבעת_סביון_גני_תקווה.jpg',       country:'ישראל', city:'גני תקווה',    type:'מסחרי' },
-  { name:'גבעת שמואל',               hint:'מרכז מסחרי פתוח עם עמודים ודקלים',                    lat:32.0771,lng:34.8468, img:'49_גבעת_שמואל.jpg',                 country:'ישראל', city:'גבעת שמואל',   type:'מסחרי' },
-  { name:'סוקולוב, רמת השרון',       hint:'מרכז מסחרי עגול ועתידני ברמת השרון',                  lat:32.1461,lng:34.8391, img:'51_סוקולוב_רמת_השרון.jpg',          country:'ישראל', city:'רמת השרון',    type:'מסחרי' },
-  { name:'סוהו, נתניה',              hint:'מרכז מסחרי עם חזית זכוכית צבעונית בנתניה',            lat:32.3215,lng:34.8532, img:'52_סוהו_נתניה.jpg',                 country:'ישראל', city:'נתניה',        type:'מסחרי' },
-  { name:'מטרופולין, נתניה',          hint:'מגדל ומרכז עסקים ענק בנתניה',                          lat:32.3289,lng:34.8601, img:'53_מטרופולין_נתניה.jpg',             country:'ישראל', city:'נתניה',        type:'מסחרי' },
-  { name:'מרכז G צמרות, ת"א',        hint:'מרכז קניות G בצמרות תל אביב',                          lat:32.1021,lng:34.7913, img:'54_מרכז_G_צמרות_תל_אביב.jpg',       country:'ישראל', city:'תל אביב',      type:'מסחרי' },
-  { name:'מרכז מסחרי צמרות, ת"א',   hint:'מרכז קניות צמרות תל אביב — הבניין הבנוי',              lat:32.1018,lng:34.7910, img:'55_מרכז_מסחרי_צמרות_תל_אביב.jpg',  country:'ישראל', city:'תל אביב',      type:'מסחרי' },
-];
-
-const COLORS = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#a855f7','#ec4899','#14b8a6','#f97316'];
-
-// ═══════════════════════════════════
-// STATE
-// ═══════════════════════════════════
-let myName='', myColor='', roomCode='', isHost=false;
-let gameState=null, myScore=0, myGuessedThisRound=false;
-let map=null, myPin=null, resMap=null;
-let timerInt=null, pollInt=null;
-let hintUsed=false;
-
-// filters
-let selCountries=new Set(), selCities=new Set(), selTypes=new Set(), selRounds=10;
-
-// ═══════════════════════════════════
-// STORAGE HELPERS
-// ═══════════════════════════════════
-async function saveRoom(code, data) {
-  try { await window.storage.set('room:'+code, JSON.stringify(data), true); } catch(e){}
-}
-async function loadRoom(code) {
-  try {
-    const r = await window.storage.get('room:'+code, true);
-    return r ? JSON.parse(r.value) : null;
-  } catch(e){ return null; }
-}
-
-// ═══════════════════════════════════
-// SCREEN NAV
-// ═══════════════════════════════════
-function show(id) {
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
-// ═══════════════════════════════════
-// FILTER SETUP
-// ═══════════════════════════════════
-function initFilters() {
-  const countries=[...new Set(BUILDINGS.map(b=>b.country))];
-  const cities=[...new Set(BUILDINGS.map(b=>b.city))].sort();
-  const types=[...new Set(BUILDINGS.map(b=>b.type))];
-
-  renderChips('f-country', countries, selCountries);
-  renderChips('f-city', cities, selCities);
-  renderChips('f-type', types, selTypes);
-  renderChips('f-rounds', [5,8,10,15,'הכל'], null, true);
-}
-
-function renderChips(containerId, items, selSet, isRounds=false) {
-  const el = document.getElementById(containerId);
-  el.innerHTML = items.map(item => {
-    const on = isRounds ? item==selRounds : selSet.size===0;
-    return `<div class="chip ${on?'on':''}" onclick="toggleChip(this,'${item}','${containerId}')">${item}</div>`;
-  }).join('');
-}
-
-function toggleChip(el, val, containerId) {
-  if (containerId==='f-rounds') {
-    selRounds = val==='הכל' ? 999 : parseInt(val);
-    document.querySelectorAll('#f-rounds .chip').forEach(c=>c.classList.remove('on'));
-    el.classList.add('on');
-    return;
-  }
-  const map = {
-    'f-country': selCountries,
-    'f-city': selCities,
-    'f-type': selTypes,
-  };
-  const s = map[containerId];
-  if (s.has(val)) s.delete(val); else s.add(val);
-  el.classList.toggle('on');
-}
-
-function getFilteredBuildings() {
-  return BUILDINGS.filter(b =>
-    (selCountries.size===0 || selCountries.has(b.country)) &&
-    (selCities.size===0    || selCities.has(b.city)) &&
-    (selTypes.size===0     || selTypes.has(b.type))
-  );
-}
-
-// ═══════════════════════════════════
-// SPLASH ACTIONS
-// ═══════════════════════════════════
-function goCreate() {
-  myName = document.getElementById('my-name').value.trim();
-  if (!myName) { alert('הכנס את שמך!'); return; }
-  myColor = COLORS[Math.floor(Math.random()*COLORS.length)];
-  isHost = true;
-  initFilters();
-  show('s-filter');
-}
-
-async function goJoin() {
-  myName = document.getElementById('my-name').value.trim();
-  const code = document.getElementById('join-code').value.trim().toUpperCase();
-  if (!myName) { alert('הכנס את שמך!'); return; }
-  if (code.length!==4) { alert('קוד חדר חייב להיות 4 תווים'); return; }
-  myColor = COLORS[Math.floor(Math.random()*COLORS.length)];
-  isHost = false;
-  roomCode = code;
-
-  const room = await loadRoom(code);
-  if (!room) { alert('חדר לא נמצא!'); return; }
-
-  // add me to players
-  room.players = room.players || [];
-  if (!room.players.find(p=>p.name===myName)) {
-    room.players.push({name:myName, color:myColor, score:0});
-    await saveRoom(code, room);
-  }
-  gameState = room;
-  enterLobby();
-}
-
-// ═══════════════════════════════════
-// CREATE ROOM
-// ═══════════════════════════════════
-async function createRoom() {
-  const pool = getFilteredBuildings();
-  if (pool.length < 3) { alert('לא מספיק בניינים עם הסינון הנוכחי! נסה להרחיב את הבחירה.'); return; }
-
-  roomCode = Math.random().toString(36).substr(2,4).toUpperCase();
-  const rounds = Math.min(selRounds, pool.length);
-  const buildings = [...pool].sort(()=>Math.random()-0.5).slice(0, rounds);
-
-  gameState = {
-    code: roomCode,
-    host: myName,
-    status: 'lobby', // lobby | playing | results | final
-    roundIdx: 0,
-    buildings: buildings,
-    players: [{name:myName, color:myColor, score:0}],
-    guesses: {}, // roundIdx -> {playerName -> {lat,lng,dist,pts}}
-    hintUsed: {},
-  };
-
-  await saveRoom(roomCode, gameState);
-  enterLobby();
-}
-
-// ═══════════════════════════════════
-// LOBBY
-// ═══════════════════════════════════
-function enterLobby() {
-  show('s-lobby');
-  document.getElementById('lobby-code').textContent = roomCode;
-  document.getElementById('btn-start-game').style.display = isHost ? 'block' : 'none';
-  document.getElementById('lobby-wait-msg').style.display = isHost ? 'none' : 'block';
-  renderLobbyPlayers();
-  startPolling();
-}
-
-function renderLobbyPlayers() {
-  if (!gameState) return;
-  document.getElementById('lobby-players').innerHTML = (gameState.players||[]).map(p=>`
-    <div class="player-item">
-      <div class="pdot" style="background:${p.color}"></div>
-      <span>${p.name}${p.name===gameState.host?' 👑':''}</span>
-    </div>`).join('');
-}
-
-async function hostStartGame() {
-  if (!isHost) return;
-  gameState.status = 'playing';
-  gameState.roundIdx = 0;
-  await saveRoom(roomCode, gameState);
-  startGame();
-}
-
-// ═══════════════════════════════════
-// POLLING
-// ═══════════════════════════════════
-function startPolling() {
-  clearInterval(pollInt);
-  pollInt = setInterval(async ()=>{
-    const room = await loadRoom(roomCode);
-    if (!room) return;
-    gameState = room;
-
-    if (room.status==='lobby') { renderLobbyPlayers(); return; }
-    if (room.status==='playing' && document.getElementById('s-lobby').classList.contains('active')) {
-      startGame(); return;
-    }
-    if (room.status==='playing') {
-      checkWaiting();
-    }
-    if (room.status==='results' && !document.getElementById('s-results').classList.contains('active')) {
-      showResults();
-    }
-    if (room.status==='final' && !document.getElementById('s-final').classList.contains('active')) {
-      showFinal();
-    }
-  }, 2000);
-}
-
-// ═══════════════════════════════════
-// GAME
-// ═══════════════════════════════════
-function startGame() {
-  show('s-game');
-  initMap();
-  beginRound();
-}
-
-function initMap() {
-  if (map) return;
-  map = L.map('map', {center:[32.0,34.8], zoom:7, zoomControl:true});
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(map);
-  map.on('click', e => {
-    if (myGuessedThisRound) return;
-    placePin(e.latlng.lat, e.latlng.lng);
-  });
-}
-
-function beginRound() {
-  myGuessedThisRound = false;
-  hintUsed = false;
-  if (myPin) { map.removeLayer(myPin); myPin=null; }
-  document.getElementById('waiting-overlay').classList.remove('show');
-  document.getElementById('hint-bar').style.display='none';
-  document.getElementById('hint-bar').textContent='';
-  document.getElementById('btn-hint').disabled=false;
-  document.getElementById('btn-guess').disabled=true;
-
-  const b = gameState.buildings[gameState.roundIdx];
-  document.getElementById('g-round').textContent=`סיבוב ${gameState.roundIdx+1}/${gameState.buildings.length}`;
-
-  // image
-  const img=document.getElementById('bimg'), fb=document.getElementById('imgfb');
-  img.style.display='block'; fb.style.display='none';
-  img.onerror=()=>{ img.style.display='none'; fb.style.display='flex';
-    document.getElementById('fbname').textContent=b.name;
-    document.getElementById('fbdesc').textContent=b.hint; };
-  img.src = IMG + b.img;
-
-  updateMyScore();
-  startTimer();
-}
-
-function placePin(lat, lng) {
-  if (myPin) map.removeLayer(myPin);
-  myPin = L.circleMarker([lat,lng],{radius:14,fillColor:myColor,color:'white',weight:3,fillOpacity:0.92})
-    .addTo(map).bindPopup(myName).openPopup();
-  document.getElementById('btn-guess').disabled=false;
-}
-
-function startTimer() {
-  clearInterval(timerInt);
-  let t=60;
-  const el=document.getElementById('g-timer');
-  el.textContent=`⏱ ${t}`; el.style.color='#f59e0b';
-  timerInt=setInterval(()=>{
-    t--;
-    el.textContent=`⏱ ${t}`;
-    el.style.color=t<=10?'#ef4444':'#f59e0b';
-    if(t<=0){clearInterval(timerInt); autoSubmit();}
-  },1000);
-}
-
-function autoSubmit() {
-  if (myGuessedThisRound) return;
-  if (myPin) submitGuess();
-  else recordGuess(null,null,null,0);
-}
-
-function useHint() {
-  hintUsed=true;
-  const b=gameState.buildings[gameState.roundIdx];
-  document.getElementById('hint-bar').style.display='block';
-  document.getElementById('hint-bar').textContent=`💡 ${b.hint}`;
-  document.getElementById('btn-hint').disabled=true;
-}
-
-async function submitGuess() {
-  if (myGuessedThisRound || !myPin) return;
-  clearInterval(timerInt);
-  const b=gameState.buildings[gameState.roundIdx];
-  const ll=myPin.getLatLng();
-  const dist=haversine(ll.lat,ll.lng,b.lat,b.lng);
-  let pts=calcPts(dist);
-  if(hintUsed) pts=Math.floor(pts*0.7);
-  await recordGuess(ll.lat,ll.lng,dist,pts);
-}
-
-async function recordGuess(lat,lng,dist,pts) {
-  myGuessedThisRound=true;
-  document.getElementById('btn-guess').disabled=true;
-  document.getElementById('btn-hint').disabled=true;
-
-  const room=await loadRoom(roomCode);
-  if(!room) return;
-  const ri=room.roundIdx;
-  if(!room.guesses[ri]) room.guesses[ri]={};
-  room.guesses[ri][myName]={lat,lng,dist,pts,hintUsed,color:myColor};
-
-  // update my total score
-  const me=room.players.find(p=>p.name===myName);
-  if(me) me.score=(me.score||0)+pts;
-  myScore=(me?.score||0);
-
-  // check if all guessed
-  const guessCount=Object.keys(room.guesses[ri]).length;
-  const playerCount=room.players.length;
-  if(guessCount>=playerCount) {
-    room.status='results';
-  }
-  await saveRoom(roomCode,room);
-  gameState=room;
-  updateMyScore();
-
-  if(room.status==='results') showResults();
-  else {
-    document.getElementById('waiting-overlay').classList.add('show');
-    document.getElementById('wait-count').textContent=`${guessCount}/${playerCount} ניחשו`;
-  }
-}
-
-function checkWaiting() {
-  if (!myGuessedThisRound) return;
-  const ri=gameState.roundIdx;
-  const guesses=gameState.guesses[ri]||{};
-  const count=Object.keys(guesses).length;
-  const total=gameState.players.length;
-  document.getElementById('wait-count').textContent=`${count}/${total} ניחשו`;
-  if(count>=total && gameState.status==='results') showResults();
-}
-
-function updateMyScore() {
-  const me=gameState?.players?.find(p=>p.name===myName);
-  document.getElementById('g-score-me').textContent=`${me?.score||myScore} נק'`;
-}
-
-// ═══════════════════════════════════
-// RESULTS
-// ═══════════════════════════════════
-function showResults() {
-  clearInterval(timerInt);
-  show('s-results');
-
-  const b=gameState.buildings[gameState.roundIdx];
-  document.getElementById('res-title').textContent=`📍 ${b.name}`;
-
-  const ri=gameState.roundIdx;
-  const guesses=gameState.guesses[ri]||{};
-  const sorted=Object.entries(guesses).sort((a,c)=>c[1].pts-a[1].pts);
-
-  document.getElementById('res-cards').innerHTML=sorted.map(([name,g])=>`
-    <div class="rcard">
-      <div class="rplayer">
-        <div class="rdot" style="background:${g.color}"></div>
-        <span>${name}${g.hintUsed?' 💡':''}</span>
-      </div>
-      <div style="text-align:left">
-        <div class="rpts">+${g.pts}</div>
-        <div class="rdist">${g.dist!==null?Math.round(g.dist)+' ק"מ':'לא ניחש'}</div>
-      </div>
-    </div>`).join('');
-
-  // results mini-map
-  setTimeout(()=>{
-    if(resMap){resMap.remove();resMap=null;}
-    resMap=L.map('res-map',{center:[b.lat,b.lng],zoom:10,zoomControl:false,attributionControl:false});
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(resMap);
-    const bounds=[[b.lat,b.lng]];
-    // correct marker
-    L.marker([b.lat,b.lng],{icon:L.divIcon({className:'',
-      html:`<div style="background:#fbbf24;color:#000;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:900;border:2px solid white;font-size:0.85rem;">✓</div>`,
-      iconSize:[26,26],iconAnchor:[13,13]})}).addTo(resMap);
-    sorted.forEach(([name,g])=>{
-      if(g.lat!==null){
-        L.circleMarker([g.lat,g.lng],{radius:9,fillColor:g.color,color:'white',weight:2,fillOpacity:0.9}).addTo(resMap).bindPopup(name);
-        L.polyline([[b.lat,b.lng],[g.lat,g.lng]],{color:g.color,weight:2,dashArray:'4,3'}).addTo(resMap);
-        bounds.push([g.lat,g.lng]);
-      }
-    });
-    if(bounds.length>1)resMap.fitBounds(L.latLngBounds(bounds),{padding:[20,20]});
-  },100);
-
-  // show next button only for host
-  document.getElementById('btn-next').style.display=isHost?'block':'none';
-  document.getElementById('next-wait').style.display=isHost?'none':'block';
-}
-
-async function nextRound() {
-  if(!isHost) return;
-  const room=await loadRoom(roomCode);
-  if(!room) return;
-  room.roundIdx++;
-  if(room.roundIdx>=room.buildings.length) {
-    room.status='final';
-  } else {
-    room.status='playing';
-    myGuessedThisRound=false;
-  }
-  await saveRoom(roomCode,room);
-  gameState=room;
-  if(room.status==='final') showFinal();
-  else { beginRound(); show('s-game'); }
-}
-
-// ═══════════════════════════════════
-// FINAL
-// ═══════════════════════════════════
-function showFinal() {
-  clearInterval(pollInt);
-  show('s-final');
-  const sorted=[...(gameState.players||[])].sort((a,b)=>b.score-a.score);
-  document.getElementById('final-ranks').innerHTML=sorted.map((p,i)=>`
-    <div class="frank ${i===0?'f1':'fx'}" style="width:100%">
-      <div style="display:flex;align-items:center;gap:10px">
-        <div style="background:${p.color};width:12px;height:12px;border-radius:50%"></div>
-        <span>${i===0?'🏆 ':i===1?'🥈 ':i===2?'🥉 ':''}${p.name}</span>
-      </div>
-      <span>${p.score} נק'</span>
-    </div>`).join('');
-}
-
-// ═══════════════════════════════════
-// UTILS
-// ═══════════════════════════════════
-function haversine(lat1,lng1,lat2,lng2){
-  const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLng=(lng2-lng1)*Math.PI/180;
-  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
-  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-}
-function calcPts(d){
-  if(d<0.5)return 500; if(d<2)return Math.round(500-d*50);
-  if(d<10)return Math.round(400-d*15); if(d<50)return Math.max(100,Math.round(250-d*3));
-  if(d<200)return Math.max(10,Math.round(100-d*0.4)); return 0;
-}
-</script>
-</body>
-</html>
+    <div class="divider">— או —</div>
+    <input class="inp" id="join-code" placeholder="קוד חדר (4 תווים)" maxlength="4" style="text-align:center;font-size:1.3rem;letter-spacing:6px;text-transform:uppercase"/>
+    <button class="sec-btn" onclick="goJoin()
