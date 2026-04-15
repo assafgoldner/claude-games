@@ -46,7 +46,7 @@ html,body{height:100%;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;ba
 /* GAME — split layout */
 #s-game{background:#0f172a;overflow:hidden;flex-direction:row!important}
 
-#game-left{width:58%;flex-shrink:0;display:flex;flex-direction:column;border-left:1px solid #334155;height:100%}
+#game-left{width:42%;flex-shrink:0;display:flex;flex-direction:column;border-left:1px solid #334155;height:100%}
 #game-right{flex:1;display:flex;flex-direction:column;height:100%}
 
 #game-top{background:#1e293b;padding:6px 10px;display:flex;align-items:center;gap:6px;flex-shrink:0;border-bottom:1px solid #334155;font-size:0.78rem}
@@ -56,7 +56,7 @@ html,body{height:100%;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;ba
 #g-score{background:#0f172a;border-radius:20px;padding:2px 8px;font-size:0.75rem}
 
 #img-box{flex:1;position:relative;overflow:hidden;background:#0f172a;min-height:0}
-#bimg{width:100%;height:110%;object-fit:cover;display:block;object-position:center 0%}
+#bimg{width:100%;height:100%;object-fit:contain;display:block;background:#0a1628}
 #imgfb{display:none;position:absolute;inset:0;background:linear-gradient(135deg,#0f172a,#1e3a5f);flex-direction:column;align-items:center;justify-content:center;padding:12px;text-align:center}
 
 #hint-bar{background:#1e2d1a;padding:5px 10px;font-size:0.75rem;color:#fbbf24;display:none;flex-shrink:0}
@@ -70,10 +70,10 @@ html,body{height:100%;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;ba
 /* map side */
 #map-top{background:#1e293b;padding:6px 10px;flex-shrink:0;border-bottom:1px solid #334155;display:block}
 #map-top.hidden{display:none}
-.loc-select{background:#0f172a;border:1px solid #334155;border-radius:8px;color:#f1f5f9;padding:5px 8px;font-size:0.75rem;width:100%;margin-bottom:4px}
-.loc-row{display:flex;gap:4px}
+.loc-select{background:#0f172a;border:1px solid #334155;border-radius:8px;color:#f1f5f9;padding:8px 10px;font-size:0.88rem;width:100%;margin-bottom:4px}
+.loc-row{display:flex;gap:6px}
 .loc-row .loc-select{margin:0}
-#btn-goto{background:#1e3a5f;border:1px solid #38bdf8;color:#38bdf8;border-radius:8px;padding:5px 10px;font-size:0.72rem;cursor:pointer;white-space:nowrap;flex-shrink:0}
+#btn-goto{background:#1e3a5f;border:1px solid #38bdf8;color:#38bdf8;border-radius:8px;padding:8px 14px;font-size:0.82rem;cursor:pointer;white-space:nowrap;flex-shrink:0;font-weight:700}
 
 #map-area{flex:1;position:relative;min-height:0}
 #map{width:100%;height:100%}
