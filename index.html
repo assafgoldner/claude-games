@@ -579,10 +579,10 @@ function useHint(){
   // Gentle hint: city name for Israel, country name for abroad, + rough radius
   let hintText='';
   if(b.country==='ישראל'){
-    const radius=Math.floor(Math.random()*6)+5; // 5-10 km
+    const radius=Math.floor(Math.random()*6)+5;
     hintText=`📍 באזור ${b.city}, רדיוס של כ-${radius} ק"מ`;
   } else {
-    hintText=`🌍 ${b.country} — ${b.city}`;
+    hintText=`🌍 זה לא בישראל`;
   }
   const hb=document.getElementById('hint-bar');
   hb.style.display='block';
