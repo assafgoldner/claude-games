@@ -128,7 +128,14 @@ html,body{height:100%;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;ba
   <div class="fsec"><h3>🌍 מדינה</h3><div class="chips" id="f-country"></div></div>
   <div class="fsec"><h3>🏙️ עיר</h3><div class="chips" id="f-city"></div></div>
   <div class="fsec"><h3>🏛️ סוג בניין</h3><div class="chips" id="f-type"></div></div>
-  <div class="fsec"><h3>🔢 מספר סיבובים</h3><div class="chips rounds-row" id="f-rounds"></div></div>
+  <div class="fsec"><h3>🔢 מספר סיבובים</h3>
+    <div class="chips rounds-row" id="f-rounds"></div>
+    <div style="display:flex;gap:6px;margin-top:8px;align-items:center">
+      <span style="font-size:0.78rem;color:#94a3b8;white-space:nowrap">מותאם אישית:</span>
+      <input type="number" id="custom-rounds" min="1" max="40" placeholder="מספר" class="inp" style="margin:0;padding:7px 10px;font-size:0.85rem;width:80px"/>
+      <button class="chip" onclick="pickCustomRounds()" style="white-space:nowrap">✓ אשר</button>
+    </div>
+  </div>
   <button class="big-btn" id="create-btn" onclick="createRoom()" style="max-width:400px;align-self:center">✅ צור חדר</button>
 </div>
 
@@ -339,8 +346,7 @@ function gotoLocation(){
     const[lat,lng]=val.split(',').map(Number);
     map.setView([lat,lng],15);
   }
-  // hide the nav panel after navigating
-  document.getElementById('map-top').classList.add('hidden');
+  // don't hide — keep dropdowns accessible
 }
 function getCityCenter(city){
   const b=BUILDINGS.find(x=>x.city===city);
@@ -381,6 +387,14 @@ function pickRounds(el,val){
   selRounds=val==='הכל'?999:parseInt(val);
   document.querySelectorAll('#f-rounds .chip').forEach(c=>c.classList.remove('on'));
   el.classList.add('on');
+  document.getElementById('custom-rounds').value='';
+}
+function pickCustomRounds(){
+  const v=parseInt(document.getElementById('custom-rounds').value);
+  if(!v||v<1){toast('הכנס מספר תקין');return;}
+  selRounds=v;
+  document.querySelectorAll('#f-rounds .chip').forEach(c=>c.classList.remove('on'));
+  toast(`✓ ${v} סיבובים נבחרו`);
 }
 function getFiltered(){
   return BUILDINGS.filter(b=>
@@ -561,9 +575,18 @@ function autoSubmit(){if(!myGuessedThisRound){if(myPin)submitGuess();else record
 
 function useHint(){
   hintUsed=true;
+  const b=gameState.buildings[gameState.roundIdx];
+  // Gentle hint: city name for Israel, country name for abroad, + rough radius
+  let hintText='';
+  if(b.country==='ישראל'){
+    const radius=Math.floor(Math.random()*6)+5; // 5-10 km
+    hintText=`📍 באזור ${b.city}, רדיוס של כ-${radius} ק"מ`;
+  } else {
+    hintText=`🌍 ${b.country} — ${b.city}`;
+  }
   const hb=document.getElementById('hint-bar');
   hb.style.display='block';
-  hb.textContent='💡 '+gameState.buildings[gameState.roundIdx].hint;
+  hb.textContent='💡 '+hintText;
   document.getElementById('btn-hint').disabled=true;
 }
 
