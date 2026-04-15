@@ -46,7 +46,7 @@ html,body{height:100%;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;ba
 /* GAME — split layout */
 #s-game{background:#0f172a;overflow:hidden;flex-direction:row!important}
 
-#game-left{width:48%;flex-shrink:0;display:flex;flex-direction:column;border-left:1px solid #334155;height:100%}
+#game-left{width:58%;flex-shrink:0;display:flex;flex-direction:column;border-left:1px solid #334155;height:100%}
 #game-right{flex:1;display:flex;flex-direction:column;height:100%}
 
 #game-top{background:#1e293b;padding:6px 10px;display:flex;align-items:center;gap:6px;flex-shrink:0;border-bottom:1px solid #334155;font-size:0.78rem}
@@ -56,7 +56,7 @@ html,body{height:100%;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;ba
 #g-score{background:#0f172a;border-radius:20px;padding:2px 8px;font-size:0.75rem}
 
 #img-box{flex:1;position:relative;overflow:hidden;background:#0f172a;min-height:0}
-#bimg{width:100%;height:100%;object-fit:cover;display:block}
+#bimg{width:100%;height:110%;object-fit:cover;display:block;object-position:center 0%}
 #imgfb{display:none;position:absolute;inset:0;background:linear-gradient(135deg,#0f172a,#1e3a5f);flex-direction:column;align-items:center;justify-content:center;padding:12px;text-align:center}
 
 #hint-bar{background:#1e2d1a;padding:5px 10px;font-size:0.75rem;color:#fbbf24;display:none;flex-shrink:0}
@@ -68,7 +68,8 @@ html,body{height:100%;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;ba
 #btn-guess:disabled{background:#1e3a2e;color:#4b5563}
 
 /* map side */
-#map-top{background:#1e293b;padding:6px 10px;flex-shrink:0;border-bottom:1px solid #334155}
+#map-top{background:#1e293b;padding:6px 10px;flex-shrink:0;border-bottom:1px solid #334155;display:block}
+#map-top.hidden{display:none}
 .loc-select{background:#0f172a;border:1px solid #334155;border-radius:8px;color:#f1f5f9;padding:5px 8px;font-size:0.75rem;width:100%;margin-bottom:4px}
 .loc-row{display:flex;gap:4px}
 .loc-row .loc-select{margin:0}
@@ -203,6 +204,8 @@ html,body{height:100%;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;ba
 <div id="s-results" class="screen">
   <h2 id="res-title">תוצאות</h2>
   <div id="res-cards" style="display:flex;flex-direction:column;gap:7px"></div>
+  <div style="color:#94a3b8;font-size:0.75rem;margin-top:4px">📊 טבלת ניקוד</div>
+  <div id="standings" style="display:flex;flex-direction:column;gap:4px"></div>
   <div id="res-map" style="height:180px;border-radius:12px;overflow:hidden;flex-shrink:0"></div>
   <button class="big-btn" id="btn-next" onclick="nextRound()" style="display:none">הסיבוב הבא ←</button>
   <div id="next-wait" style="color:#94a3b8;font-size:0.82rem;text-align:center;display:none">ממתין למנחה...</div>
@@ -329,13 +332,15 @@ function updateStreetOptions(){
 }
 function gotoLocation(){
   const val=document.getElementById('sel-building').value||
-            document.getElementById('sel-city').value&&getCityCenter(document.getElementById('sel-city').value)||
-            document.getElementById('sel-country').value&&getCountryCenter(document.getElementById('sel-country').value);
+    (document.getElementById('sel-city').value&&getCityCenter(document.getElementById('sel-city').value))||
+    (document.getElementById('sel-country').value&&getCountryCenter(document.getElementById('sel-country').value));
   if(!val)return;
   if(val.includes(',')){
     const[lat,lng]=val.split(',').map(Number);
     map.setView([lat,lng],15);
   }
+  // hide the nav panel after navigating
+  document.getElementById('map-top').classList.add('hidden');
 }
 function getCityCenter(city){
   const b=BUILDINGS.find(x=>x.city===city);
@@ -514,6 +519,7 @@ function beginRound(){
   document.getElementById('hint-bar').style.display='none';
   document.getElementById('btn-hint').disabled=false;
   document.getElementById('btn-guess').disabled=true;
+  document.getElementById('map-top').classList.remove('hidden');
   // reset dropdowns
   document.getElementById('sel-country').value='';
   document.getElementById('sel-city').value='';
@@ -641,6 +647,18 @@ function showResults(){
   },100);
   document.getElementById('btn-next').style.display=isHost?'block':'none';
   document.getElementById('next-wait').style.display=isHost?'none':'block';
+
+  // standings
+  const standings=[...(gameState.players||[])].sort((a,b)=>b.score-a.score);
+  const standEl=document.getElementById('standings');
+  if(standEl) standEl.innerHTML=standings.map((p,i)=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#0f172a;border-radius:8px">
+      <div style="display:flex;align-items:center;gap:6px">
+        <div style="background:${p.color};width:9px;height:9px;border-radius:50%"></div>
+        <span style="font-size:0.82rem">${i===0?'🥇 ':i===1?'🥈 ':i===2?'🥉 ':''}${p.name}</span>
+      </div>
+      <span style="font-size:0.82rem;font-weight:700;color:#38bdf8">${p.score} נק'</span>
+    </div>`).join('');
 }
 
 async function nextRound(){
