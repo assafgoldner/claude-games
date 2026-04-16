@@ -105,8 +105,47 @@ html,body{height:100%;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;ba
 <body>
 <div id="toast"></div>
 
+<!-- TUTORIAL -->
+<div id="s-tutorial" class="screen active" style="background:linear-gradient(160deg,#0f172a,#1e3a5f);align-items:center;justify-content:center;padding:20px;gap:14px;overflow-y:auto">
+  <h1 style="font-size:2rem;font-weight:900;color:#38bdf8;text-align:center">🏛️ היכן זה?</h1>
+  <div style="color:#64748b;font-size:0.82rem;text-align:center">רמי וימר אדריכלים בע״מ</div>
+  <div style="background:#1e293b;border-radius:18px;padding:20px;width:100%;max-width:400px;display:flex;flex-direction:column;gap:12px">
+    <div style="color:#38bdf8;font-size:1rem;font-weight:700;margin-bottom:4px">איך משחקים?</div>
+    <div style="display:flex;gap:10px;align-items:flex-start">
+      <span style="font-size:1.4rem">🏛️</span>
+      <div><div style="font-size:0.88rem;font-weight:600">ראה תמונה של בניין</div><div style="font-size:0.78rem;color:#94a3b8;margin-top:2px">כל סיבוב מציג בניין מתיק העבודות של רמי וימר. לחץ על התמונה להגדלה.</div></div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:flex-start">
+      <span style="font-size:1.4rem">📍</span>
+      <div><div style="font-size:0.88rem;font-weight:600">סמן על המפה</div><div style="font-size:0.78rem;color:#94a3b8;margin-top:2px">השתמש בתפריט הניווט (מדינה/עיר/בניין) כדי להגיע לאזור, ואז לחץ על המפה לסימון מיקום הבניין.</div></div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:flex-start">
+      <span style="font-size:1.4rem">⏱️</span>
+      <div><div style="font-size:0.88rem;font-weight:600">60 שניות לניחוש</div><div style="font-size:0.78rem;color:#94a3b8;margin-top:2px">לחץ "אישור ניחוש" לפני שהזמן נגמר. ככל שתהיה קרוב יותר — תקבל יותר נקודות (עד 500).</div></div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:flex-start">
+      <span style="font-size:1.4rem">💡</span>
+      <div><div style="font-size:0.88rem;font-weight:600">רמז (−30% ניקוד)</div><div style="font-size:0.78rem;color:#94a3b8;margin-top:2px">אפשר לקבל רמז על העיר, אבל זה עולה 30% מהניקוד של הסיבוב.</div></div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:flex-start">
+      <span style="font-size:1.4rem">👥</span>
+      <div><div style="font-size:0.88rem;font-weight:600">מולטיפלייר</div><div style="font-size:0.78rem;color:#94a3b8;margin-top:2px">צור חדר וקבל קוד 4 ספרות — שתף עם החברים. כולם מנחשים בו-זמנית, המנחה מתקדם לסיבוב הבא.</div></div>
+    </div>
+    <div style="background:#0f172a;border-radius:10px;padding:10px;font-size:0.78rem;color:#fbbf24;text-align:center">
+      🏆 הניחוש הקרוב ביותר בכל סיבוב מקבל כי ניקוד מלא!
+    </div>
+  </div>
+  <button class="big-btn" onclick="show('s-splash')" style="max-width:400px;width:100%">▶ בואו נשחק!</button>
+</div>
+
+<!-- IMAGE LIGHTBOX -->
+<div id="lightbox" onclick="closeLightbox()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9000;align-items:center;justify-content:center;cursor:zoom-out">
+  <img id="lightbox-img" src="" style="max-width:96%;max-height:92vh;border-radius:10px;object-fit:contain"/>
+  <div style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.15);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;cursor:pointer">✕</div>
+</div>
+
 <!-- SPLASH -->
-<div id="s-splash" class="screen active">
+<div id="s-splash" class="screen">
   <h1>🏛️ היכן זה?</h1>
   <div class="sub">משחק ניחוש מיקום בניינים</div>
   <div class="firm">רמי וימר אדריכלים בע״מ</div>
@@ -162,7 +201,7 @@ html,body{height:100%;overflow:hidden;font-family:'Segoe UI',Arial,sans-serif;ba
       <div id="g-timer">⏱ 60</div>
       <div id="g-score">0 נק'</div>
     </div>
-    <div id="img-box">
+    <div id="img-box" onclick="openLightbox()" style="cursor:zoom-in">
       <img id="bimg" src="" alt="בניין"/>
       <div id="imgfb">
         <div style="font-size:1.8rem;margin-bottom:6px">🏛️</div>
@@ -710,6 +749,19 @@ function showFinal(){
 }
 
 // ── UTILS ─────────────────────────────────────────
+function openLightbox(){
+  const src=document.getElementById('bimg').src;
+  if(!src)return;
+  const lb=document.getElementById('lightbox');
+  document.getElementById('lightbox-img').src=src;
+  lb.style.display='flex';
+}
+function closeLightbox(){
+  document.getElementById('lightbox').style.display='none';
+}
+// close on Escape
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLightbox();});
+
 function haversine(lat1,lng1,lat2,lng2){
   const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLng=(lng2-lng1)*Math.PI/180;
   const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
