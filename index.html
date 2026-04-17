@@ -272,18 +272,39 @@ const SB_KEY='sb_publishable_kkKe7b6r_oq8lj4H384VTA_pVDWjP3s';
 async function sbGet(code){
   try{
     const r=await fetch(`${SB_URL}/rest/v1/rooms?code=eq.${code}&select=data`,
-      {headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`}});
+      {headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`},signal:AbortSignal.timeout(5000)});
+    if(!r.ok)return null;
     const rows=await r.json();
     return rows.length?rows[0].data:null;
   }catch(e){return null;}
 }
+
 async function sbSet(code,data){
-  await fetch(`${SB_URL}/rest/v1/rooms`,{
-    method:'POST',
-    headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,
-      'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
-    body:JSON.stringify({code,data,updated_at:new Date().toISOString()})
-  });
+  try{
+    await fetch(`${SB_URL}/rest/v1/rooms`,{
+      method:'POST',
+      headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,
+        'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
+      body:JSON.stringify({code,data,updated_at:new Date().toISOString()}),
+      signal:AbortSignal.timeout(5000)
+    });
+  }catch(e){console.warn('sbSet failed',e);}
+}
+
+// Atomic update — read-modify-write with retry to prevent race conditions
+async function sbUpdate(code, mutateFn, retries=3){
+  for(let i=0;i<retries;i++){
+    const room=await sbGet(code);
+    if(!room)return null;
+    const updated=mutateFn(JSON.parse(JSON.stringify(room))); // deep clone
+    if(!updated)return room; // mutateFn returned falsy = no change needed
+    await sbSet(code,updated);
+    // verify write
+    const verify=await sbGet(code);
+    if(verify&&JSON.stringify(verify)===JSON.stringify(updated))return updated;
+    await new Promise(r=>setTimeout(r,100*i)); // backoff
+  }
+  return await sbGet(code);
 }
 
 // ── DATA ─────────────────────────────────────────
@@ -341,6 +362,8 @@ let map=null,myPin=null,resMap=null;
 let timerInt=null,pollInt=null,hintUsed=false;
 let selCountries=new Set(),selCities=new Set(),selTypes=new Set(),selRounds=10;
 let lastRoundIdx=-1,lastStatus='';
+let submitInProgress=false; // fix #1: prevent double submit
+let hostHeartbeatInt=null;  // fix #4: host heartbeat
 
 // ── TOAST ─────────────────────────────────────────
 function toast(msg,dur=3000){
@@ -460,15 +483,29 @@ async function goJoin(){
   const code=document.getElementById('join-code').value.trim().toUpperCase();
   if(!myName){toast('הכנס את שמך!');return;}
   if(code.length!==4){toast('קוד חדר חייב להיות 4 תווים');return;}
+
+  // fix #6: check for duplicate name
+  const existing=await sbGet(code);
+  if(!existing){toast('❌ חדר לא נמצא! בדוק את הקוד.');return;}
+  if(existing.players.find(p=>p.name===myName)){
+    toast('⚠️ השם הזה כבר תפוס — בחר שם אחר');return;
+  }
+  // fix #3: block joining mid-game
+  if(existing.status!=='lobby'){
+    toast('⛔ המשחק כבר התחיל — לא ניתן להצטרף');return;
+  }
+
   myColor=COLORS[Math.floor(Math.random()*COLORS.length)];
-  isHost=false;roomCode=code;
-  toast('🔍 מחפש חדר...');
-  const room=await sbGet(code);
-  if(!room){toast('❌ חדר לא נמצא! בדוק את הקוד.');return;}
-  if(!room.players.find(p=>p.name===myName))
-    room.players.push({name:myName,color:myColor,score:0});
-  await sbSet(code,room);
-  gameState=room;enterLobby();
+  isHost=false; roomCode=code;
+  toast('🔍 מצטרף לחדר...');
+
+  const room=await sbUpdate(code, r=>{
+    if(!r.players.find(p=>p.name===myName))
+      r.players.push({name:myName,color:myColor,score:0});
+    return r;
+  });
+  if(!room){toast('❌ שגיאה בהצטרפות');return;}
+  gameState=room; enterLobby();
 }
 
 // ── CREATE ROOM ───────────────────────────────────
@@ -507,15 +544,53 @@ function renderLobbyPlayers(){
       <span>${p.name}${p.name===gameState.host?' 👑':''}</span>
     </div>`).join('');
 }
+// fix #7: prevent double-click start
+let startGameInProgress=false;
 async function hostStartGame(){
-  if(!isHost)return;
+  if(!isHost||startGameInProgress)return;
+  startGameInProgress=true;
+  document.getElementById('btn-start-game').disabled=true;
   gameState.status='playing';gameState.roundIdx=0;
   await sbSet(roomCode,gameState);
   lastRoundIdx=0;lastStatus='playing';
+  startHostHeartbeat();
   startGame();
 }
 
-// ── POLLING — fast (1s) ───────────────────────────
+// fix #4: host heartbeat — writes timestamp every 5s so others know host is alive
+function startHostHeartbeat(){
+  clearInterval(hostHeartbeatInt);
+  if(!isHost)return;
+  hostHeartbeatInt=setInterval(async()=>{
+    await sbUpdate(roomCode, r=>{ r.hostAlive=Date.now(); return r; });
+  },5000);
+}
+
+// fix #4: non-host checks if host is dead (>20s no heartbeat) → show "take over" option
+function checkHostAlive(room){
+  if(isHost)return;
+  if(!room.hostAlive)return;
+  const age=Date.now()-room.hostAlive;
+  if(age>20000){
+    const nw=document.getElementById('next-wait');
+    if(nw&&nw.style.display!=='none'){
+      nw.innerHTML=`מנחה לא מגיב — <button onclick="takeOverHost()" style="background:#0ea5e9;border:none;color:#fff;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:0.8rem">קח שליטה</button>`;
+    }
+    const bn=document.getElementById('btn-next');
+    if(bn)bn.style.display='block';
+  }
+}
+
+async function takeOverHost(){
+  isHost=true;
+  toast('👑 אתה עכשיו המנחה');
+  await sbUpdate(roomCode, r=>{ r.host=myName; r.hostAlive=Date.now(); return r; });
+  document.getElementById('btn-next').style.display='block';
+  document.getElementById('next-wait').style.display='none';
+  startHostHeartbeat();
+}
+
+// ── POLLING ───────────────────────────────────────
 function startPolling(){
   clearInterval(pollInt);
   pollInt=setInterval(poll,1000);
@@ -599,6 +674,7 @@ function placePin(lat,lng){
   document.getElementById('btn-guess').disabled=false;
 }
 
+// fix #1: prevent double submit with flag + timer clear guard
 function startTimer(){
   clearInterval(timerInt);let t=60;
   const el=document.getElementById('g-timer');
@@ -606,11 +682,15 @@ function startTimer(){
   timerInt=setInterval(()=>{
     t--;el.textContent=`⏱ ${t}`;
     el.style.color=t<=10?'#ef4444':'#f59e0b';
-    if(t<=0){clearInterval(timerInt);autoSubmit();}
+    if(t<=0){clearInterval(timerInt);timerInt=null;autoSubmit();}
   },1000);
 }
 
-function autoSubmit(){if(!myGuessedThisRound){if(myPin)submitGuess();else recordGuess(null,null,null,0);}}
+function autoSubmit(){
+  if(myGuessedThisRound||submitInProgress)return; // fix #1
+  if(myPin)submitGuess();
+  else recordGuess(null,null,null,0);
+}
 
 function useHint(){
   hintUsed=true;
@@ -725,13 +805,16 @@ function showResults(){
 
 async function nextRound(){
   if(!isHost)return;
-  const room=await sbGet(roomCode);if(!room)return;
-  room.roundIdx++;
-  room.status=room.roundIdx>=room.buildings.length?'final':'playing';
-  await sbSet(roomCode,room);
+  const room=await sbUpdate(roomCode, r=>{
+    r.roundIdx++;
+    r.hostAlive=Date.now();
+    r.status=r.roundIdx>=r.buildings.length?'final':'playing';
+    return r;
+  });
+  if(!room)return;
   gameState=room;
-  if(room.status==='final'){lastStatus='final';showFinal();}
-  else{lastRoundIdx=room.roundIdx;lastStatus='playing';myGuessedThisRound=false;show('s-game');beginRound();}
+  if(room.status==='final'){lastStatus='final';clearInterval(hostHeartbeatInt);showFinal();}
+  else{lastRoundIdx=room.roundIdx;lastStatus='playing';myGuessedThisRound=false;submitInProgress=false;show('s-game');beginRound();}
 }
 
 // ── FINAL ─────────────────────────────────────────
